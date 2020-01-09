@@ -131,4 +131,7 @@ public class UserService extends BaseService {
         userDao.save(user);
     }
 
+    public User findByMobile(String mobile){
+        return userDao.findByMobile(mobile);
+    }
 }
