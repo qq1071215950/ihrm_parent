@@ -6,7 +6,9 @@ import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.exception.CommonException;
 import com.hrm.common.utils.JwtUtil;
+import com.hrm.common.utils.PermissionConstants;
 import com.hrm.domain.system.Permission;
+import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.domain.system.response.UserResult;
@@ -95,8 +97,9 @@ public class UserController extends BaseController {
 
     /**
      * 根据id删除
+     * name 为资源访问表示
      */
-    @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE,name = "api-user-delete")
     public Result delete(@PathVariable(value = "id") String id) {
         userService.deleteById(id);
         return new Result(ResultCode.SUCCESS);
@@ -132,9 +135,21 @@ public class UserController extends BaseController {
         if (user == null || !(password.equals(user.getPassword()))){
             return new Result(ResultCode.PASSWORD_IS_NOT_CORRECT);
         }else {
+            // todo 加入可访问的接口
+            // 添加可访问的资源api
+            StringBuilder sb = new StringBuilder();
+            for (Role role: user.getRoles()){
+                for (Permission permission: role.getPermissions()){
+                    if (permission.getType()== PermissionConstants.PY_API){
+                        sb.append(permission.getCode()).append(",");
+                    }
+                }
+            }
             Map<String,Object> map = new HashMap<>();
             map.put("companyId",user.getCompanyId());
+            map.put("apis",sb.toString());
             map.put("companyName",user.getCompanyName());
+
             String token = jwtUtil.createJWT(user.getId(), user.getUsername(), map);
             return new Result(ResultCode.SUCCESS,token);
         }
@@ -146,19 +161,9 @@ public class UserController extends BaseController {
      * @param
      * @return
      */
+    // todo 加入api接口访问权限控制报空指针问题
     @RequestMapping(value = "/profile", method = RequestMethod.POST)
     public Result profile(HttpServletRequest request) {
-        // 获取用户id
-        String authorization = request.getHeader("Authorization");
-        if (StringUtils.isEmpty(authorization)) {
-            throw new CommonException(ResultCode.UNAUTHENTICATED);
-        }
-        String token = authorization.replace("Bearer ", "");
-        // 从请求头中获取token信息
-        Claims claims = jwtUtil.parseJWT(token);
-        if (claims == null) {
-            throw new CommonException(ResultCode.UNAUTHENTICATED);
-        }
         String userId = claims.getId();
         User user = userService.findById(userId);
         ProfileResult result = null;

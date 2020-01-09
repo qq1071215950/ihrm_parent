@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 
 //1.配置springboot的包扫描
 @SpringBootApplication(scanBasePackages = "com.hrm")
@@ -28,4 +29,11 @@ public class SystemApplication {
     public JwtUtil jwtUtil(){
         return new JwtUtil();
     }
+
+    // 解决no sesssion的问题
+    @Bean
+    public OpenEntityManagerInViewFilter openEntityManagerInViewFilter() {
+        return new OpenEntityManagerInViewFilter();
+    }
+
 }
