@@ -1,0 +1,5 @@
+# Project exclude paths
+/hrm_common/target/
+/hrm_common_model/target/
+/hrm_company/target/
+/hrm_system/target/
