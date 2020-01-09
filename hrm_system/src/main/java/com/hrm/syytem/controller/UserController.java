@@ -6,15 +6,18 @@ import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.exception.CommonException;
 import com.hrm.common.utils.JwtUtil;
+import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.domain.system.response.UserResult;
+import com.hrm.syytem.service.PermissionService;
 import com.hrm.syytem.service.UserService;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import sun.nio.cs.US_ASCII;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -34,6 +37,9 @@ public class UserController extends BaseController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PermissionService permissionService;
 
     /**
      * 保存
@@ -155,7 +161,19 @@ public class UserController extends BaseController {
         }
         String userId = claims.getId();
         User user = userService.findById(userId);
-        return new Result(ResultCode.SUCCESS,new ProfileResult(user));
+        ProfileResult result = null;
+        // 获取相应的权限
+       if ("user".equals(user.getLevel())){
+           result = new ProfileResult(user);
+       }else {
+            Map map = new HashMap();
+            if ("coAdmin".equals(user.getLevel())){
+                map.put("enVisible","1");
+            }
+            List<Permission> list = permissionService.findAll(map);
+            result = new ProfileResult(user, list);
+       }
+        return new Result(ResultCode.SUCCESS,result);
     }
 
 
