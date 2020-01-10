@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
  * @version 1.0
  * @date 2020/1/9 13:58
  */
-@Component
+//@Component
 public class JwtInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private JwtUtil jwtUtil;

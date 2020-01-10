@@ -1,6 +1,10 @@
 package com.hrm.common.controller;
 
+import com.hrm.domain.system.response.ProfileResult;
 import io.jsonwebtoken.Claims;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +27,8 @@ public class BaseController {
      * @param request
      * @param response
      */
-    @ModelAttribute
+    // todo jwt的形式
+   /* @ModelAttribute
     public void setReqAndResp(HttpServletRequest request, HttpServletResponse response) {
         this.request = request;
         this.response = response;
@@ -33,12 +38,21 @@ public class BaseController {
             this.companyId = (String) claims.get("companyId");
             this.companyName = (String) claims.get("companyName");
         }
+    }*/
+   // todo shiro的形式
+    @ModelAttribute
+    public void setReqAndResp(HttpServletRequest request, HttpServletResponse response) {
+        this.request = request;
+        this.response = response;
+       // 得到安全数据
+        Subject subject = SecurityUtils.getSubject();
+        PrincipalCollection principals = subject.getPrincipals();
+        if (principals != null && !principals.isEmpty()){
+            ProfileResult result = (ProfileResult) principals.getPrimaryPrincipal();
+            this.companyId = result.getCompanyId();
+            this.companyName = result.getCompany();
+        }
     }
-    //企业id，（暂时使用1,以后会动态获取）
-    public String parseCompanyId() {
-        return "1";
-    }
-    public String parseCompanyName() {
-        return "江苏传智播客教育股份有限公司";
-    }
+
+
 }

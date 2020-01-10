@@ -5,7 +5,9 @@ import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
 import lombok.Getter;
 import lombok.Setter;
+import org.crazycake.shiro.AuthCachePrincipal;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -15,16 +17,18 @@ import java.util.*;
  */
 @Setter
 @Getter
-public class ProfileResult {
+public class ProfileResult implements Serializable, AuthCachePrincipal {
     private String mobile;
     private String username;
     private String company;
+    private String companyId;
     private Map<String,Object> roles = new HashMap<>();
 
     public ProfileResult(User user){
         this.mobile = user.getMobile();
         this.username = user.getUsername();
         this.company = user.getCompanyName();
+        this.companyId = user.getCompanyId();
         Set<Role> roles = user.getRoles();
 
         Set<String> menus = new HashSet<>();
@@ -71,4 +75,8 @@ public class ProfileResult {
         this.roles.put("apis",apis);
     }
 
+    @Override
+    public String getAuthCacheKey() {
+        return null;
+    }
 }

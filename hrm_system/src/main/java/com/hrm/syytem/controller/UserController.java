@@ -15,6 +15,12 @@ import com.hrm.domain.system.response.UserResult;
 import com.hrm.syytem.service.PermissionService;
 import com.hrm.syytem.service.UserService;
 import io.jsonwebtoken.Claims;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.crypto.hash.Md5Hash;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
@@ -48,9 +54,13 @@ public class UserController extends BaseController {
      */
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public Result save(@RequestBody User user) {
-        //1.设置保存的企业id
+        //1.设置保存
         user.setCompanyId(companyId);
         user.setCompanyName(companyName);
+        // todo 解密处理的
+        String password = new Md5Hash(user.getPassword(), user.getMobile(), 3).toString();// 参数 密码 盐值 加密次数
+        user.setPassword(password);
+        user.setLevel("user");
         //2.调用service完成保存企业
         userService.save(user);
         //3.构造返回结果
@@ -99,6 +109,7 @@ public class UserController extends BaseController {
      * 根据id删除
      * name 为资源访问表示
      */
+    @RequiresPermissions(value = "api-user-delete")// 没有权限事，抛出异常
     @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE,name = "api-user-delete")
     public Result delete(@PathVariable(value = "id") String id) {
         userService.deleteById(id);
@@ -130,9 +141,31 @@ public class UserController extends BaseController {
     public Result login(@RequestBody Map<String,String> loginMap) {
         String mobile = loginMap.get("mobile");
         String password = loginMap.get("password");
+        // todo shiro的登录方式
+        try {
+            // 密码加密
+           // password= new Md5Hash(password, mobile, 3).toString();// 参数 密码 盐值 加密次数
+            // 1 构造登录令牌
+            UsernamePasswordToken upToken = new UsernamePasswordToken(mobile, password);
+            // 2 获取subject
+            Subject subject = SecurityUtils.getSubject();
+            // 3 调用login方法
+            subject.login(upToken);
+            // 4获取sessionid
+            String sessionId = (String) subject.getSession().getId();
+            // 5 构造返回结果
+            return new Result(ResultCode.SUCCESS,sessionId);
+        }catch (Exception e){
+            return new Result(ResultCode.PASSWORD_IS_NOT_CORRECT);
+        }
+
         // 查询用户
-        User user = userService.findByMobile(mobile);
-        if (user == null || !(password.equals(user.getPassword()))){
+
+
+        // todo jwt的登录方式
+       /*
+       User user = userService.findByMobile(mobile);
+       if (user == null || !(password.equals(user.getPassword()))){
             return new Result(ResultCode.PASSWORD_IS_NOT_CORRECT);
         }else {
             // todo 加入可访问的接口
@@ -152,7 +185,7 @@ public class UserController extends BaseController {
 
             String token = jwtUtil.createJWT(user.getId(), user.getUsername(), map);
             return new Result(ResultCode.SUCCESS,token);
-        }
+        }*/
     }
 
 
@@ -162,9 +195,12 @@ public class UserController extends BaseController {
      * @return
      */
     // todo 加入api接口访问权限控制报空指针问题
+
     @RequestMapping(value = "/profile", method = RequestMethod.POST)
     public Result profile(HttpServletRequest request) {
-        String userId = claims.getId();
+
+        // todo Jwt的形式获取资源
+       /* String userId = claims.getId();
         User user = userService.findById(userId);
         ProfileResult result = null;
         // 获取相应的权限
@@ -177,7 +213,12 @@ public class UserController extends BaseController {
             }
             List<Permission> list = permissionService.findAll(map);
             result = new ProfileResult(user, list);
-       }
+       }*/
+
+       // todo shiro形式获取资源
+        Subject subject = SecurityUtils.getSubject();
+        PrincipalCollection principals = subject.getPrincipals();
+        ProfileResult result = (ProfileResult) principals.getPrimaryPrincipal();
         return new Result(ResultCode.SUCCESS,result);
     }
 

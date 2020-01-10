@@ -8,7 +8,8 @@ public enum ResultCode {
     UNAUTHENTICATED(false,10002,"您还未登录"),
     UNAUTHORISE(false,10003,"权限不足"),
     SERVER_ERROR(false,99999,"抱歉，系统繁忙，请稍后重试！"),
-    PASSWORD_IS_NOT_CORRECT(false,100000,"用户名或者密码错误！");
+    PASSWORD_IS_NOT_CORRECT(false,100000,"用户名或者密码错误！"),
+    QUAN_XIAN_BU_ZU(false,100001,"权限不足");
     //---用户操作返回码----
     //---企业操作返回码----
     //---权限操作返回码----
