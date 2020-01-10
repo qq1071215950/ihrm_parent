@@ -24,4 +24,7 @@ jwt:
   config:
     key:  saas-ihrm
     ttl:  360000
-
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:6868/eureka/

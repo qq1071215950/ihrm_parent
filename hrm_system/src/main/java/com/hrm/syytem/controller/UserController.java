@@ -7,11 +7,13 @@ import com.hrm.common.entity.ResultCode;
 import com.hrm.common.exception.CommonException;
 import com.hrm.common.utils.JwtUtil;
 import com.hrm.common.utils.PermissionConstants;
+import com.hrm.domain.company.Department;
 import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.domain.system.response.UserResult;
+import com.hrm.syytem.client.DepartmentFeginClient;
 import com.hrm.syytem.service.PermissionService;
 import com.hrm.syytem.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -48,6 +50,17 @@ public class UserController extends BaseController {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private DepartmentFeginClient departmentFeginClient;
+
+    //测试通过系统微服务调用企业微服务方法
+    @RequestMapping(value = "/test/{id}")
+    public Result findDeptById(@PathVariable String id) throws Exception {
+        Result dept = departmentFeginClient.findById(id);
+        System.out.println(dept);
+        return dept;
+    }
 
     /**
      * 保存

@@ -5,6 +5,8 @@
     <file url="file://$PROJECT_DIR$/hrm_common" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/hrm_common_model" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/hrm_company" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hrm_employee" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hrm_eureka" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/hrm_system" charset="UTF-8" />
   </component>
 </project>
