@@ -90,4 +90,9 @@ public class DepartmentController extends BaseController {
         departmentService.deleteById(id);
         return new Result(ResultCode.SUCCESS);
     }
+
+    @RequestMapping(value = "/department/search",method = RequestMethod.POST)
+    public Department findByCode(@RequestParam(value = "code") String code, @RequestParam(value = "companyId") String companyId){
+       return departmentService.findByCode(code, companyId);
+    }
 }

@@ -17,6 +17,8 @@ import com.hrm.syytem.client.DepartmentFeginClient;
 import com.hrm.syytem.service.PermissionService;
 import com.hrm.syytem.service.UserService;
 import io.jsonwebtoken.Claims;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -27,9 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sun.nio.cs.US_ASCII;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +59,63 @@ public class UserController extends BaseController {
     @Autowired
     private DepartmentFeginClient departmentFeginClient;
 
+    /**
+     * 导入excel
+     * 文件上传
+     * @return
+     */
+    @RequestMapping(value = "/user/import",method = RequestMethod.POST)
+    public Result importUser(@RequestParam(name = "file") MultipartFile file) throws IOException {
+        // 1 解析 excel
+        // 1 工作簿 不同的实现对象 2007
+        Workbook wb =  new XSSFWorkbook(file.getInputStream());
+        // 获取sheet
+        Sheet sheet = wb.getSheetAt(0);// 索引页
+        // 循环得到行
+        List<User> list = new ArrayList<>();
+        for (int rowNum = 1 ; rowNum <= sheet.getLastRowNum(); rowNum++){
+            Row row = sheet.getRow(rowNum);
+            Object[] values = new Object[row.getLastCellNum()];
+            for (int cellNum = 2; cellNum < row.getLastCellNum(); cellNum++){
+                // 得到单元格
+                Cell cell = row.getCell(cellNum);
+                // 获取单元的内容
+                Object value = getCellValue(cell);
+                values[cellNum] = value;
+            }
+            // 2 获取用户数据列表
+            User user = new User(values);
+            list.add(user);
+        }
+        // 3 批量保存用户数据
+        userService.svaeAll(list, companyId, companyName);
+        return new Result(ResultCode.SUCCESS);
+    }
+    private static Object getCellValue(Cell cell){
+        // 1 获取单元格的数据类型
+        CellType cellType = cell.getCellType();
+        Object value = null;
+        switch (cellType){
+            case STRING:
+                value = cell.getStringCellValue();
+                break;
+            case BOOLEAN:
+                value = cell.getBooleanCellValue();
+                break;
+            case NUMERIC:
+                // 日期和数字
+                if (DateUtil.isCellDateFormatted(cell)){
+                    value = cell.getDateCellValue();
+                }else {
+                    value = cell.getNumericCellValue();
+                }
+                break;
+            case FORMULA://公式
+                value = cell.getCellFormula();
+                break;
+        }
+        return value;
+    }
     //测试通过系统微服务调用企业微服务方法
     @RequestMapping(value = "/test/{id}")
     public Result findDeptById(@PathVariable String id) throws Exception {

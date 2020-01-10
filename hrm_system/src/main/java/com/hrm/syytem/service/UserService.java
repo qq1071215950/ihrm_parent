@@ -3,16 +3,21 @@ package com.hrm.syytem.service;
 
 import com.hrm.common.service.BaseService;
 import com.hrm.common.utils.IdWorker;
+import com.hrm.domain.company.Department;
 import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
+import com.hrm.syytem.client.DepartmentFeginClient;
 import com.hrm.syytem.dao.RoleDao;
 import com.hrm.syytem.dao.UserDao;
+import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import sun.security.rsa.RSASignature;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -31,6 +36,9 @@ public class UserService extends BaseService {
 
     @Autowired
     private RoleDao roleDao;
+
+    @Autowired
+    private DepartmentFeginClient departmentFeginClient;
     /**
      * 1.保存用户
      */
@@ -133,5 +141,33 @@ public class UserService extends BaseService {
 
     public User findByMobile(String mobile){
         return userDao.findByMobile(mobile);
+    }
+
+
+    /**
+     * 批量用户保存
+     * @param list
+     * @param companyId
+     * @param companyName
+     */
+    @Transactional
+    public void svaeAll(List<User> list, String companyId, String companyName) {
+        for (User user: list){
+            user.setPassword(new Md5Hash("123456",user.getMobile(),3).toString());
+            user.setId(idWorker.nextId()+"");
+            user.setCompanyId(companyId);
+            user.setCompanyName(companyName);
+            user.setInServiceStatus(1);
+            user.setEnableState(1);
+            user.setLevel("user");
+            Department dept = departmentFeginClient.findByCode(user.getDepartmentId(), companyId);
+            if (dept != null){
+                user.setDepartmentId(dept.getId());
+                user.setDepartmentName(dept.getName());
+            }
+            // 加入部门的属性
+            userDao.save(user);
+        }
+
     }
 }
