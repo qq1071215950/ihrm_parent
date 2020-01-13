@@ -94,6 +94,11 @@ public class User implements Serializable {
     private String departmentName;
 
     /**
+     * 员工头像
+     */
+    private String StaffPhoto;
+
+    /**
      * 管理员级别
      */
     private String level;

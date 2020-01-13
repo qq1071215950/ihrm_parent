@@ -59,6 +59,20 @@ public class UserController extends BaseController {
     @Autowired
     private DepartmentFeginClient departmentFeginClient;
 
+
+    /**
+     * 保存用户头像
+     * @param id
+     * @param file
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value="/user/upload/{id}")
+    public Result upload(@PathVariable String id,@RequestParam(name = "file")
+            MultipartFile file) throws Exception {
+    String image = userService.uploadImage(id, file);
+    return new Result(ResultCode.SUCCESS,image);
+ }
     /**
      * 导入excel
      * 文件上传

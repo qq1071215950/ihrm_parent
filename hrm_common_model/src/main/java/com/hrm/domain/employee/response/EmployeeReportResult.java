@@ -2,6 +2,7 @@ package com.hrm.domain.employee.response;
 
 import com.hrm.domain.employee.EmployeeResignation;
 import com.hrm.domain.employee.UserCompanyPersonal;
+import com.hrm.domain.poi.ExcelAttribute;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,10 +15,14 @@ import org.springframework.beans.BeanUtils;
 @ToString
 public class EmployeeReportResult {
 
+    @ExcelAttribute(sort = 0)
     private String userId;
+    @ExcelAttribute(sort = 1)
     private String username;
     private String departmentName;
+    @ExcelAttribute(sort = 2)
     private String mobile;
+
     private String timeOfEntry;
     private String companyId;
     private String sex;
@@ -28,10 +33,12 @@ public class EmployeeReportResult {
     /**
      * 最高学历
      */
+    @ExcelAttribute(sort = 3)
     private String theHighestDegreeOfEducation;
     /**
      * 国家地区
      */
+    @ExcelAttribute(sort = 4)
     private String nationalArea;
     /**
      * 护照号

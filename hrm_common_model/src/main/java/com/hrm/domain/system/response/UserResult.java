@@ -86,7 +86,7 @@ public class UserResult implements Serializable {
      * 转正时间
      */
     private Date correctionTime;
-
+    private String StaffPhoto;
     /**
      * 在职状态 1.在职  2.离职
      */

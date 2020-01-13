@@ -9,6 +9,7 @@ import com.hrm.domain.system.User;
 import com.hrm.syytem.client.DepartmentFeginClient;
 import com.hrm.syytem.dao.RoleDao;
 import com.hrm.syytem.dao.UserDao;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,12 +18,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import sun.security.rsa.RSASignature;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -169,5 +171,17 @@ public class UserService extends BaseService {
             userDao.save(user);
         }
 
+    }
+
+    public String uploadImage(String id, MultipartFile file) throws IOException {
+        //根据id查询用户
+        User user = userDao.findById(id).get();
+        //对上传文件进行Base64编码
+        String s = Base64.encode(file.getBytes());
+        String dataUrl = new String("data:image/jpg;base64,"+s);
+        user.setStaffPhoto(dataUrl);
+        //保存图片信息
+        userDao.save(user);
+        return dataUrl;
     }
 }
