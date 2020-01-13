@@ -12,6 +12,7 @@ import com.hrm.domain.employee.*;
 import com.hrm.domain.employee.response.EmployeeReportResult;
 import com.hrm.domain.system.User;
 import com.hrm.employee.service.*;
+import net.sf.jasperreports.engine.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -25,9 +26,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +54,44 @@ public class EmployeeController extends BaseController {
     @Autowired
     private ArchiveService archiveService;
 
+
+    /**
+     * 打印pdf
+     * @param id
+     * @throws IOException
+     */
+    @RequestMapping(value = "/{id}/pdf", method = RequestMethod.GET)
+    public void pdf(@PathVariable String id) throws IOException {
+        //1.引入jasper文件
+        Resource resource = new ClassPathResource("templates/profile.jasper");
+        FileInputStream fis = new FileInputStream(resource.getFile());
+        //2.构造数据
+        //a.用户详情数据
+        UserCompanyPersonal personal = userCompanyPersonalService.findById(id);
+        //b.用户岗位信息数据
+        UserCompanyJobs jobs = userCompanyJobsService.findById(id);
+        //c.用户头像       域名 / id
+        // todo 需要解决图片url问题
+        String staffPhoto = "http://pkbivgfrm.bkt.clouddn.com/" + id;
+        System.out.println(staffPhoto);
+        //3.填充pdf模板数据，并输出pdf
+        Map params = new HashMap();
+        Map<String, Object> map1 = BeanMapUtils.beanToMap(personal);
+        Map<String, Object> map2 = BeanMapUtils.beanToMap(jobs);
+        params.putAll(map1);
+        params.putAll(map2);
+        params.put("staffPhoto", "staffPhoto");
+        ServletOutputStream os = response.getOutputStream();
+        try {
+            JasperPrint print = JasperFillManager.fillReport(fis, params, new
+                    JREmptyDataSource());
+            JasperExportManager.exportReportToPdfStream(print, os);
+        } catch (JRException e) {
+            e.printStackTrace();
+        } finally {
+            os.flush();
+        }
+    }
 
     /**
      * 员工个人信息保存
